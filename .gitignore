@@ -1,0 +1,15 @@
+# Virtual environment - no need to upload, anyone can recreate it
+venv/
+
+# Database file - contains your personal data
+data/gpro.db
+
+# JSON data files - these are generated automatically
+data/*.json
+
+# Python cache files - created automatically by Python
+__pycache__/
+*.pyc
+
+# PyCharm settings
+.idea/

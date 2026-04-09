@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPRO Analyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0f0f1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        header {
+            background-color: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 3px solid #e10600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #ffffff;
+            letter-spacing: 2px;
+        }
+
+        header span {
+            color: #e10600;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Cards are the white boxes that hold information */
+        .card {
+            background-color: #1a1a2e;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            color: #e10600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        /* Stats grid shows numbers side by side */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            background-color: #0f0f1a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #2a2a4a;
+        }
+
+        .stat-box .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .stat-box .unit {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Setup bars show car setup values visually */
+        .setup-bar-container {
+            margin-bottom: 12px;
+        }
+
+        .setup-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .setup-bar {
+            height: 8px;
+            background-color: #0f0f1a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .setup-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e10600, #ff6b6b);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .error {
+            text-align: center;
+            color: #e10600;
+            padding: 40px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span>🏎️</span>
+    <h1>GPRO ANALYZER</h1>
+</header>
+
+<div class="container">
+
+    <!-- Latest Race Card -->
+    <div class="card">
+        <h2>Latest Race</h2>
+        <div id="latest-race" class="stats-grid">
+            <div class="loading">Loading race data...</div>
+        </div>
+    </div>
+
+    <!-- Car Setup Card -->
+    <div class="card">
+        <h2>Car Setup</h2>
+        <div id="car-setup">
+            <div class="loading">Loading setup data...</div>
+        </div>
+    </div>
+
+    <!-- Fuel Strategy Card -->
+    <div class="card">
+        <h2>Fuel Strategy</h2>
+        <div id="fuel-strategy" class="stats-grid">
+            <div class="loading">Loading fuel data...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // The address of our Flask backend server
+    const API_URL = "http://127.0.0.1:5000";
+
+    // This runs as soon as the page loads
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchLatestRace();
+    });
+
+    async function fetchLatestRace() {
+        try {
+            // Ask our Flask server for the latest race data
+            const response = await fetch(`${API_URL}/api/setups/latest`);
+            const data = await response.json();
+
+            // Once we have the data, fill in each section
+            renderLatestRace(data);
+            renderCarSetup(data);
+            renderFuelStrategy(data);
+
+        } catch (error) {
+            document.getElementById("latest-race").innerHTML =
+                '<div class="error">Could not connect to server. Is it running?</div>';
+        }
+    }
+
+    function renderLatestRace(data) {
+        // Builds the stats boxes for track info
+        document.getElementById("latest-race").innerHTML = `
+            <div class="stat-box">
+                <div class="label">Track</div>
+                <div class="value" style="font-size:18px">${data.track_name}</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Season</div>
+                <div class="value">${data.season}</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Race</div>
+                <div class="value">${data.race}</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Laps</div>
+                <div class="value">${data.laps}</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Power</div>
+                <div class="value">${data.track_power}</div>
+                <div class="unit">track rating</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Handling</div>
+                <div class="value">${data.track_handl}</div>
+                <div class="unit">track rating</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Acceleration</div>
+                <div class="value">${data.track_accel}</div>
+                <div class="unit">track rating</div>
+            </div>
+        `;
+    }
+
+    function renderCarSetup(data) {
+        // Setup values range from 0-1000 in GPRO
+        // We convert them to a percentage for the visual bars
+        const parts = [
+            { label: "Front Wing", value: data.set_fwing },
+            { label: "Rear Wing",  value: data.set_rwing },
+            { label: "Engine",     value: data.set_engine },
+            { label: "Brakes",     value: data.set_brakes },
+            { label: "Gear",       value: data.set_gear },
+            { label: "Suspension", value: data.set_susp }
+        ];
+
+        document.getElementById("car-setup").innerHTML = parts.map(part => `
+            <div class="setup-bar-container">
+                <div class="setup-bar-label">
+                    <span>${part.label}</span>
+                    <span>${part.value}</span>
+                </div>
+                <div class="setup-bar">
+                    <div class="setup-bar-fill" style="width: ${(part.value / 1000) * 100}%"></div>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function renderFuelStrategy(data) {
+        document.getElementById("fuel-strategy").innerHTML = `
+            <div class="stat-box">
+                <div class="label">Start Fuel</div>
+                <div class="value">${data.start_fuel}</div>
+                <div class="unit">litres</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Pit Stop 1</div>
+                <div class="value">${data.fuel_stop1}</div>
+                <div class="unit">litres</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Pit Stop 2</div>
+                <div class="value">${data.fuel_stop2 || "—"}</div>
+                <div class="unit">litres</div>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
