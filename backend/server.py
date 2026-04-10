@@ -2,8 +2,11 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import sqlite3
 import os
+import db
 
 app = Flask(__name__)
+# Create database tables when server starts
+db.create_tables()
 CORS(app)  # This allows the dashboard to talk to this server
 
 # Works both locally and on Railway
