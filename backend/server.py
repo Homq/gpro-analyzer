@@ -60,6 +60,13 @@ def get_tracks():
     conn.close()
     return jsonify([dict(row) for row in rows])
 
+@app.route("/api/fetch")
+def fetch_data():
+    """Triggers a data fetch from the GPRO API"""
+    import fetcher
+    fetcher.main()
+    return jsonify({"status": "Data fetched successfully!"})
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, port=port)
