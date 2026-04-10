@@ -3,7 +3,7 @@ import json
 import os
 import db
 
-API_TOKEN = "eyJ0eXAiOiJKV1QiLCAiYWxnIjoiSFMyNTYifQ.eyJpZCI6IDExMzQwMDUsImNyZWF0ZWQiOiJUaHUgQXByIDkgMjE6Mzk6MTUgVVRDKzAyMDAgMjAyNiJ9.IBfi-VrhN6CMNKKOxF2ZUhAvxMt2CSvTTW3_6mvdlD4"
+API_TOKEN = os.environ.get("GPRO_API_TOKEN", "")
 BASE_URL = "https://gpro.net"
 
 HEADERS = {
