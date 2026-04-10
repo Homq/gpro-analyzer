@@ -2,7 +2,9 @@ import sqlite3
 import os
 
 # Path to our database file
-DB_PATH = os.path.join("..", "data", "gpro.db")
+# Works both locally and on Railway
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "data", "gpro.db")
 
 
 def get_connection():
