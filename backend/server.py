@@ -9,6 +9,8 @@ CORS(app)  # This allows the dashboard to talk to this server
 # Works both locally and on Railway
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "gpro.db")
+# Create the data folder if it doesn't exist
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def get_connection():
     """Opens a connection to the database"""
