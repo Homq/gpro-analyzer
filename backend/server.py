@@ -2,42 +2,37 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import sqlite3
 import os
-import db
 
-app = Flask(__name__)
-# Create database tables when server starts
-db.create_tables()
-CORS(app)  # This allows the dashboard to talk to this server
-
-# Works both locally and on Railway
+# Set up paths first
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "gpro.db")
+
 # Create the data folder if it doesn't exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
+# Now import db and create tables
+import db
+db.create_tables()
+
+app = Flask(__name__)
+CORS(app)
+
 def get_connection():
-    """Opens a connection to the database"""
     conn = sqlite3.connect(DB_PATH)
-    # This makes rows behave like dictionaries
-    # so we get {"track_name": "Sakhir"} instead of just ("Sakhir",)
     conn.row_factory = sqlite3.Row
     return conn
 
 @app.route("/api/setups")
 def get_setups():
-    """Returns all race setups as JSON.
-    When the dashboard visits /api/setups, this function runs."""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM race_setups ORDER BY season, race")
     rows = cursor.fetchall()
     conn.close()
-    # Convert rows to a list of dictionaries
     return jsonify([dict(row) for row in rows])
 
 @app.route("/api/setups/latest")
 def get_latest_setup():
-    """Returns only the most recent race setup"""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -54,7 +49,6 @@ def get_latest_setup():
 
 @app.route("/api/tracks")
 def get_tracks():
-    """Returns a summary of all tracks we have data for"""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
