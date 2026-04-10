@@ -4,9 +4,30 @@ import psycopg2
 import psycopg2.extras
 import os
 import db
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Create tables when server starts
 db.create_tables()
+def scheduled_fetch():
+    """Runs automatically after every GPRO race"""
+    print("Running scheduled data fetch...")
+    import fetcher
+    fetcher.main()
+    print("Scheduled fetch complete!")
+
+# Set up the scheduler
+scheduler = BackgroundScheduler()
+# Run at 22:30 CET (20:30 UTC) every Tuesday and Friday
+scheduler.add_job(
+    scheduled_fetch,
+    'cron',
+    day_of_week='tue,fri',
+    hour=20,
+    minute=30,
+    timezone='UTC'
+)
+scheduler.start()
+print("Scheduler started - will fetch after each GPRO race!")
 
 app = Flask(__name__)
 CORS(app)
