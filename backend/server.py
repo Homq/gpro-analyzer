@@ -64,5 +64,5 @@ def get_tracks():
     return jsonify([dict(row) for row in rows])
 
 if __name__ == "__main__":
-    # debug=True means the server restarts automatically when you change code
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, port=port)
