@@ -34,11 +34,15 @@ def fetch_race_setup():
         return None
 
 def save_data(data, filename):
-    """Saves fetched data to a JSON file in the data folder"""
+    """Saves fetched data to a JSON file in the data folder (local only)"""
     filepath = os.path.join("..", "data", filename)
-    with open(filepath, "w") as f:
-        json.dump(data, f, indent=2)
-    print(f"Data saved to {filepath}")
+    # Only save files locally, not on Railway
+    if os.path.exists(os.path.join("..", "data")):
+        with open(filepath, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"Data saved to {filepath}")
+    else:
+        print(f"Skipping file save (no data folder) - {filename}")
 
 
 def main():
